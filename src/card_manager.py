@@ -8,7 +8,6 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 PATH_TO_JSON = os.path.join(BASE_DIR, "cards.json")
 
-# 3. On ouvre le fichier avec ce chemin parfait
 with open(PATH_TO_JSON, "r", encoding="utf-8") as file:
     cards_data = json.load(file)
     

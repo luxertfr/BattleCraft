@@ -28,25 +28,29 @@ screen = pygame.display.set_mode((1280, 720))
 clock = pygame.time.Clock()
 input_rect = pygame.Rect(440, 360, 400, 50)
 pygame.font.init()
-font = pygame.font.Font("./assets/Minecraft.ttf", 40)
+font = pygame.font.Font("./assets/fonts/Minecraft.ttf", 40)
 
-fond = pygame.image.load("./assets/minecraft-fond.jpg")
+fond = pygame.image.load("./assets/img/minecraft-fond.jpg")
 fond = fond.convert()
 fond = pygame.transform.scale(fond, (1280, 720))
 
+play_fond = pygame.image.load("./assets/img/play-fond.jpg")
+play_fond = play_fond.convert()
+play_fond = pygame.transform.scale(play_fond, (1280, 720))
 
 
-welcome = pygame.image.load("./assets/name.png")
+
+welcome = pygame.image.load("./assets/img/name.png")
 welcome = pygame.transform.scale(welcome, (640, 170))
 
 pygame.mixer.init()
-pygame.mixer_music.load("./assets/skylander.mp3")
+pygame.mixer_music.load("./assets/sounds/skylander.mp3")
 pygame.mixer_music.play(-1, 0.0, 0)
 
-bouton_jouer    = Button(None, (505, input_rect.y - 100), "./assets/play.png",  (320, 80), "PLAY")
-bouton_decks    = Button(None, (505, input_rect.y),       "./assets/deck.png",  (320, 80), "DECK")
-bouton_boutique = Button(None, (505, input_rect.y + 100), "./assets/shop.png",  (320, 80), "SHOP")
-bouton_quitter  = Button(None, (505, input_rect.y + 200), "./assets/quit.png",  (320, 80), "QUIT")
+bouton_jouer    = Button(None, (505, input_rect.y - 100), "./assets/img/play.png",  (320, 80), "PLAY")
+bouton_decks    = Button(None, (505, input_rect.y),       "./assets/img/deck.png",  (320, 80), "DECK")
+bouton_boutique = Button(None, (505, input_rect.y + 100), "./assets/img/shop.png",  (320, 80), "SHOP")
+bouton_quitter  = Button(None, (505, input_rect.y + 200), "./assets/img/quit.png",  (320, 80), "QUIT")
 
 cursor.execute("SELECT * FROM users")
 data = cursor.fetchone()
@@ -109,7 +113,61 @@ while running:
             etat = bouton_quitter.verifier_clic(etat)
 
     elif etat == "PLAY":
-        pass
+        screen.blit(play_fond, (0, 0))
+        
+        
+        COULEUR_GRILLE = (255, 255, 255)  
+        COULEUR_ALLIE = (0, 255, 0)       
+        COULEUR_ENNEMI = (255, 0, 0)      
+        COULEUR_OBJET = (255, 215, 0)     
+        
+        
+
+        LARGEUR_CARTE = 90
+        HAUTEUR_CARTE = 130
+
+        ALLIE_X = 100
+        for i in range(3):
+            y = 135 + (i * 150)  
+            rect_allie = pygame.Rect(ALLIE_X, y, LARGEUR_CARTE, HAUTEUR_CARTE)
+            pygame.draw.rect(screen, COULEUR_ALLIE, rect_allie, 2)
+            
+            txt = font.render(f"M{i+1}", True, COULEUR_ALLIE)
+            screen.blit(txt, (ALLIE_X + 25, y + 45))
+
+        
+        ENNEMI_X = 1090
+        for i in range(3):
+            y = 135 + (i * 150)
+            rect_ennemi = pygame.Rect(ENNEMI_X, y, LARGEUR_CARTE, HAUTEUR_CARTE)
+            pygame.draw.rect(screen, COULEUR_ENNEMI, rect_ennemi, 2)
+            
+            txt = font.render(f"E{i+1}", True, COULEUR_ENNEMI)
+            screen.blit(txt, (ENNEMI_X + 25, y + 45))
+
+
+        OBJET_Y = 580
+        LARGEUR_OBJET = 140   
+        HAUTEUR_OBJET = 110
+
+        slot_1_x = 480
+        rect_objet1 = pygame.Rect(slot_1_x, OBJET_Y, LARGEUR_OBJET, HAUTEUR_OBJET)
+        pygame.draw.rect(screen, COULEUR_OBJET, rect_objet1, 2)
+        
+        txt_obj1 = font.render("OBJ 1", True, COULEUR_OBJET)
+        screen.blit(txt_obj1, (slot_1_x + 15, OBJET_Y + 35))
+
+        slot_2_x = 660
+        rect_objet2 = pygame.Rect(slot_2_x, OBJET_Y, LARGEUR_OBJET, HAUTEUR_OBJET)
+        pygame.draw.rect(screen, COULEUR_OBJET, rect_objet2, 2)
+        
+        txt_obj2 = font.render("OBJ 2", True, COULEUR_OBJET)
+        screen.blit(txt_obj2, (slot_2_x + 15, OBJET_Y + 35))
+        
+        # player1_circle = pygame.c
+        
+        
+        
 
     elif etat == "SHOP":
         pass
