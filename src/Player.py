@@ -1,4 +1,5 @@
 import sqlite3
+from Card import Card, MobCard, FoodCard, EnchantedBookCard, ALL_CARDS
 conn = sqlite3.connect('ma_base.db')
 cursor = conn.cursor()
 
@@ -6,6 +7,7 @@ class Player:
     def __init__(self, name):
         self.name = name[0] if isinstance(name, tuple) else name
         self.argent = 0
+        
         
     def get_argent(self):
         return self.argent
