@@ -1,13 +1,17 @@
 import sqlite3
-from Card import Card, MobCard, FoodCard, EnchantedBookCard, ALL_CARDS
+from card_manager import ALL_CARDS
+from Card import Card, MobCard, FoodCard, EnchantedBookCard
 conn = sqlite3.connect('ma_base.db')
 cursor = conn.cursor()
 
 class Player:
     def __init__(self, name):
-        self.name = name[0] if isinstance(name, tuple) else name
+        self.name = name
         self.argent = 0
+        self.deck = [cartes for cartes in ALL_CARDS.values() if cartes.prix is None]
         
+    def get_deck(self):
+        return self.deck
         
     def get_argent(self):
         return self.argent

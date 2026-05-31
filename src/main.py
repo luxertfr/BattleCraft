@@ -1,12 +1,13 @@
 import sqlite3
 import pygame
 from Button import Button
-
-import os
-
+from Player import Player
+from Card import Card, MobCard, FoodCard, EnchantedBookCard, ArtifactCard
 
 
 pygame.init()
+
+# --- SQL ---
 
 conn = sqlite3.connect('./ma_base.db')
 cursor = conn.cursor()
@@ -19,6 +20,8 @@ cursor.execute("""
 """)
 conn.commit()
 
+
+# --- Paramétrage de couleur + les img + sons + boutons --- 
 black = (0, 0, 0)
 white = (255, 255, 255)
 screen = pygame.display.set_mode((1280, 720))
@@ -30,6 +33,8 @@ font = pygame.font.Font("./assets/Minecraft.ttf", 40)
 fond = pygame.image.load("./assets/minecraft-fond.jpg")
 fond = fond.convert()
 fond = pygame.transform.scale(fond, (1280, 720))
+
+
 
 welcome = pygame.image.load("./assets/name.png")
 welcome = pygame.transform.scale(welcome, (640, 170))
@@ -45,6 +50,11 @@ bouton_quitter  = Button(None, (505, input_rect.y + 200), "./assets/quit.png",  
 
 cursor.execute("SELECT * FROM users")
 data = cursor.fetchone()
+
+player = None
+if data:
+    player = Player(data[0])
+    player.set_argent(data[1])
 
 running = True
 text = ""
