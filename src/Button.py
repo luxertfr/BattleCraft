@@ -20,11 +20,12 @@ class Button:
         """Méthode pour dessiner le bouton à l'écran"""
         surface.blit(self.image, self.rect.topleft)
 
-    def verifier_clic(self, etat):
+    def verifier_clic(self, etat, sound_to_play):
         pos_souris = pygame.mouse.get_pos()
         bouton_presse = pygame.mouse.get_pressed()[0]
 
         if self.rect.collidepoint(pos_souris) and bouton_presse and not self.clique:
+            sound_to_play.play()
             self.clique = True
             return self.mode
 

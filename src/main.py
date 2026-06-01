@@ -3,23 +3,28 @@ import pygame
 from Button import Button
 from Player import Player
 from Card import Card, MobCard, FoodCard, EnchantedBookCard, ArtifactCard
-
+from shop import Shop
+from deck import Deck
+from card_manager import ALL_CARDS
 
 pygame.init()
 
 # --- SQL ---
-
 conn = sqlite3.connect('./ma_base.db')
 cursor = conn.cursor()
+
 cursor.execute("""
     CREATE TABLE IF NOT EXISTS users(
         id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
         name TEXT,
-        argent INTEGER
+        argent INTEGER,
+        deck TEXT
     )
 """)
 conn.commit()
 
+# --- Instanciation des classes ---
+shop = Shop()
 
 # --- Paramétrage de couleur + les img + sons + boutons --- 
 black = (0, 0, 0)
@@ -29,6 +34,8 @@ clock = pygame.time.Clock()
 input_rect = pygame.Rect(440, 360, 400, 50)
 pygame.font.init()
 font = pygame.font.Font("./assets/fonts/Minecraft.ttf", 40)
+font_small = pygame.font.Font("./assets/fonts/Minecraft.ttf", 20)
+font_XXSMALL = pygame.font.Font("./assets/fonts/Minecraft.ttf", 10)
 
 fond = pygame.image.load("./assets/img/minecraft-fond.jpg")
 fond = fond.convert()
@@ -38,8 +45,6 @@ play_fond = pygame.image.load("./assets/img/play-fond.jpg")
 play_fond = play_fond.convert()
 play_fond = pygame.transform.scale(play_fond, (1280, 720))
 
-
-
 welcome = pygame.image.load("./assets/img/name.png")
 welcome = pygame.transform.scale(welcome, (640, 170))
 
@@ -47,18 +52,37 @@ pygame.mixer.init()
 pygame.mixer_music.load("./assets/sounds/skylander.mp3")
 pygame.mixer_music.play(-1, 0.0, 0)
 
+son_clic = pygame.mixer.Sound("./assets/sounds/sfx-minecraft.mp3")
+
 bouton_jouer    = Button(None, (505, input_rect.y - 100), "./assets/img/play.png",  (320, 80), "PLAY")
 bouton_decks    = Button(None, (505, input_rect.y),       "./assets/img/deck.png",  (320, 80), "DECK")
 bouton_boutique = Button(None, (505, input_rect.y + 100), "./assets/img/shop.png",  (320, 80), "SHOP")
 bouton_quitter  = Button(None, (505, input_rect.y + 200), "./assets/img/quit.png",  (320, 80), "QUIT")
 
+bouton_retour   = Button(None, (20, 20), "./assets/img/quit.png", (150, 50), "MENU")
+
+scroll_x = 0
+
+# --- Récupération et reconstruction du profil joueur ---
 cursor.execute("SELECT * FROM users")
 data = cursor.fetchone()
 
 player = None
 if data:
-    player = Player(data[0])
-    player.set_argent(data[1])
+
+    player = Player(data[1])
+    player.argent = data[2]
+    
+
+    if len(data) > 3 and data[3]:
+        player.deck.cartes = [] 
+        noms_sauvegardes = data[3].split(",")
+        for nom in noms_sauvegardes:
+            if nom in ALL_CARDS:
+                carte = ALL_CARDS[nom]
+                player.deck.acheter_carte(carte)
+                if carte in shop.cartes:
+                    shop.acheter(carte)
 
 running = True
 text = ""
@@ -82,14 +106,38 @@ while running:
                 if event.key == pygame.K_BACKSPACE:
                     text = text[:-1]
                 elif event.key == pygame.K_RETURN:
-                    if text.strip():
-                        cursor.execute("INSERT INTO users (name, argent) VALUES (?, ?)", (text.strip(), 0))
+                    pseudo = text.strip()
+                    if pseudo:
+                        cursor.execute("INSERT INTO users (name, argent, deck) VALUES (?, ?, ?)", (pseudo, 150, ""))
                         conn.commit()
                         text = ""
-                        cursor.execute("SELECT * FROM users")
+                        cursor.execute("SELECT * FROM users WHERE name = ?", (pseudo,))
                         data = cursor.fetchone()
+                        if data:
+                            player = Player(data[1])
+                            player.argent = data[2]
                 else:
                     text += event.unicode
+
+        # --- Détection des clics dans la Boutique ---
+        elif etat == "SHOP":
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                
+                for index, carte in enumerate(shop.cartes):
+                   
+                    x = 100 + (index * 220)
+                    y = 200
+                    rect_carte = pygame.Rect(x, y, 180, 260)
+                    
+                    if rect_carte.collidepoint(event.pos):
+                        if player and player.get_argent() >= carte.prix:
+                            player.perdre_argent(carte.prix) 
+                            player.ajouter_carte(carte)      
+                            shop.acheter(carte)              
+                            son_clic.play()
+                            break 
+                        else:
+                            print("Pas assez d'argent !")
 
     screen.fill((30, 30, 30))
 
@@ -101,28 +149,24 @@ while running:
             text_surface = font.render(text, True, black)
             screen.blit(text_surface, (input_rect.x + 10, input_rect.y + 10))
         else:
-            
             bouton_jouer.afficher(screen)
             bouton_decks.afficher(screen)
             bouton_boutique.afficher(screen)
             bouton_quitter.afficher(screen)
 
-            etat = bouton_jouer.verifier_clic(etat)
-            etat = bouton_decks.verifier_clic(etat)
-            etat = bouton_boutique.verifier_clic(etat)
-            etat = bouton_quitter.verifier_clic(etat)
+            etat = bouton_jouer.verifier_clic(etat, son_clic)
+            etat = bouton_decks.verifier_clic(etat, son_clic)
+            etat = bouton_boutique.verifier_clic(etat, son_clic)
+            etat = bouton_quitter.verifier_clic(etat, son_clic)
 
     elif etat == "PLAY":
         screen.blit(play_fond, (0, 0))
+        etat = bouton_retour.verifier_clic(etat, son_clic)
         
-        
-        COULEUR_GRILLE = (255, 255, 255)  
-        COULEUR_ALLIE = (0, 255, 0)       
+        COULEUR_ALLIE = (0, 255, 0)      
         COULEUR_ENNEMI = (255, 0, 0)      
         COULEUR_OBJET = (255, 215, 0)     
         
-        
-
         LARGEUR_CARTE = 90
         HAUTEUR_CARTE = 130
 
@@ -131,20 +175,16 @@ while running:
             y = 135 + (i * 150)  
             rect_allie = pygame.Rect(ALLIE_X, y, LARGEUR_CARTE, HAUTEUR_CARTE)
             pygame.draw.rect(screen, COULEUR_ALLIE, rect_allie, 2)
-            
             txt = font.render(f"M{i+1}", True, COULEUR_ALLIE)
             screen.blit(txt, (ALLIE_X + 25, y + 45))
-
         
         ENNEMI_X = 1090
         for i in range(3):
             y = 135 + (i * 150)
             rect_ennemi = pygame.Rect(ENNEMI_X, y, LARGEUR_CARTE, HAUTEUR_CARTE)
             pygame.draw.rect(screen, COULEUR_ENNEMI, rect_ennemi, 2)
-            
             txt = font.render(f"E{i+1}", True, COULEUR_ENNEMI)
             screen.blit(txt, (ENNEMI_X + 25, y + 45))
-
 
         OBJET_Y = 580
         LARGEUR_OBJET = 140   
@@ -153,24 +193,65 @@ while running:
         slot_1_x = 480
         rect_objet1 = pygame.Rect(slot_1_x, OBJET_Y, LARGEUR_OBJET, HAUTEUR_OBJET)
         pygame.draw.rect(screen, COULEUR_OBJET, rect_objet1, 2)
-        
         txt_obj1 = font.render("OBJ 1", True, COULEUR_OBJET)
         screen.blit(txt_obj1, (slot_1_x + 15, OBJET_Y + 35))
 
         slot_2_x = 660
         rect_objet2 = pygame.Rect(slot_2_x, OBJET_Y, LARGEUR_OBJET, HAUTEUR_OBJET)
         pygame.draw.rect(screen, COULEUR_OBJET, rect_objet2, 2)
-        
         txt_obj2 = font.render("OBJ 2", True, COULEUR_OBJET)
         screen.blit(txt_obj2, (slot_2_x + 15, OBJET_Y + 35))
+
+    elif etat == "DECK":
+        screen.fill((40, 30, 40)) 
+        etat = bouton_retour.verifier_clic(etat, son_clic)
         
-        # player1_circle = pygame.c
-        
-        
-        
+        if player:
+            titre = font.render(f"DECK DE {player.name.upper()}", True, white)
+            screen.blit(titre, (450, 30))
+            
+            for index, carte in enumerate(player.deck.cartes):
+                x = 80 + (index * 150)
+                y = 200
+                pygame.draw.rect(screen, (60, 60, 90), (x, y, 120, 180))
+                pygame.draw.rect(screen, white, (x, y, 120, 180), 2)
+                txt_nom = font_small.render(carte.nom, True, white)
+                screen.blit(txt_nom, (x + 10, y + 20))
+
 
     elif etat == "SHOP":
-        pass
+        screen.fill((20, 40, 20))
+        etat = bouton_retour.verifier_clic(etat, son_clic)
+
+        txt_boutique = font.render("BOUTIQUE", True, white)
+        screen.blit(txt_boutique, (540, 20))
+        
+        if player:
+            txt_argent = font.render(f"Emeraudes: {player.get_argent()}", True, (85, 255, 85))
+            screen.blit(txt_argent, (850, 20))
+
+        scroll_x += 1 
+        
+        largeur_totale_shop = len(shop.cartes) * 220
+        if largeur_totale_shop > 0 and scroll_x > largeur_totale_shop + 100:
+            scroll_x = -1280  
+
+        for index, carte in enumerate(shop.cartes):
+            x = 100 + (index * 220) - scroll_x  
+            y = 200
+            
+
+            if -180 < x < 1280:
+                pygame.draw.rect(screen, (40, 40, 40), (x, y, 180, 260))
+                pygame.draw.rect(screen, (85, 255, 85), (x, y, 180, 260), 3)
+                
+                txt_nom = font_small.render(carte.nom, True, white)
+                txt_desc = font_small.render(carte.description, True, white)  
+                screen.blit(txt_nom, (x + 15, y + 30))
+                screen.blit(txt_desc, (x + 15, y+ 50))
+                
+                txt_prix = font_small.render(f"Prix: {carte.prix} EM", True, (255, 215, 0))
+                screen.blit(txt_prix, (x + 15, y + 210))
 
     elif etat == "QUIT":
         pygame.quit()
