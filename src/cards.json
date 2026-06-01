@@ -2,7 +2,7 @@
   "zombie": {
     "type_carte": "Mob",
     "nom": "Zombie",
-    "description": "Lent mais très résistant. Votre meilleur acolyte pour encaisser les coups.",
+    "description": "Lent mais tres resistant. Votre meilleur acolyte pour encaisser les coups.",
     "vie": 50,
     "attaque": 10,
     "prix": null
@@ -10,7 +10,7 @@
   "squelette": {
     "type_carte": "Mob",
     "nom": "Squelette",
-    "description": "Attaque à distance avec son arc. Inflige de bons dégâts mais reste fragile.",
+    "description": "Attaque a distance avec son arc. Inflige de bons degats mais reste fragile.",
     "vie": 30,
     "attaque": 15,
     "prix": null
@@ -26,21 +26,21 @@
   "pain": {
     "type_carte": "Food",
     "nom": "Pain",
-    "description": "Fabriqué avec trois brins de blé. Redonne un tout petit peu d'énergie.",
+    "description": "Fabrique avec trois brins de ble. Redonne un tout petit peu d'energie.",
     "soin": 15,
     "prix": null
   },
   "steak": {
     "type_carte": "Food",
     "nom": "Steak",
-    "description": "Un bon steak de vache cuit à point. Restaure une quantité correcte d'énergie.",
+    "description": "Un bon steak de vache cuit a point. Restaure une quantite correcte d'energie.",
     "soin": 30,
     "prix": null
   },
   "creeper": {
     "type_carte": "Mob",
     "nom": "Creeper",
-    "description": "Explose à l'impact. Énormes dégâts de zone, mais meurt immédiatement après.",
+    "description": "Explose a l'impact. Enormes degats de zone, mais meurt immediatement apres.",
     "vie": 10,
     "attaque": 50,
     "prix": 18
@@ -48,7 +48,7 @@
   "golem_fer": {
     "type_carte": "Mob",
     "nom": "Golem de Fer",
-    "description": "Le protecteur ultime. Possède une quantité colossale de points de vie.",
+    "description": "Le protecteur ultime. Possède une quantite colossale de points de vie.",
     "vie": 150,
     "attaque": 20,
     "prix": 28
@@ -56,15 +56,15 @@
   "enderman": {
     "type_carte": "Mob",
     "nom": "Enderman",
-    "description": "Se téléporte pour frapper fort. Un excellent attaquant de fin de partie.",
+    "description": "Se teleporte pour frapper fort. Un excellent attaquant de fin de partie.",
     "vie": 45,
     "attaque": 30,
     "prix": 20
   },
   "sorciere": {
     "type_carte": "Mob",
-    "nom": "Sorcière",
-    "description": "Jette des potions de poison. Dégâts réguliers et profil équilibré.",
+    "nom": "Sorciere",
+    "description": "Jette des potions de poison. Degats reguliers et profil equilibre.",
     "vie": 35,
     "attaque": 15,
     "prix": 12
@@ -72,7 +72,7 @@
   "potion_soin": {
     "type_carte": "Food",
     "nom": "Potion de Soin II",
-    "description": "Une fiole rouge brassée pour une guérison magique instantanée.",
+    "description": "Une fiole rouge brassee pour une guerison magique instantanee.",
     "soin": 45,
     "prix": 22
   },
@@ -85,22 +85,22 @@
   },
   "pomme_notch": {
     "type_carte": "Food",
-    "nom": "Pomme d'Or Enchantée",
-    "description": "La pomme des dieux. Permet de sauver une situation désespérée.",
+    "nom": "Pomme d'Or Enchantee",
+    "description": "La pomme des dieux. Permet de sauver une situation desesperee.",
     "soin": 90,
     "prix": 40
   },
   "totem": {
     "type_carte": "Food",
-    "nom": "Totem d'Immortalité",
-    "description": "Brandissez-le pour échapper au Game Over. Restaure l'intégralité des PV.",
+    "nom": "Totem d'Immortalite",
+    "description": "Brandissez-le pour echapper au Game Over. Restaure l'integralite des PV.",
     "soin": 100,
     "prix": 45
   },
   "livre_tranchant": {
     "type_carte": "EnchantedBook",
     "nom": "Livre Tranchant V",
-    "description": "Insuffle la puissance du diamant. Multiplie par 2 (x2.0) l'attaque d'un mob allié.",
+    "description": "Insuffle la puissance du diamant. Multiplie par 2 (x2.0) l'attaque d'un mob allie.",
     "stat_modifiee": "attaque",
     "multiplicateur": 2.0,
     "cible": "allie",
@@ -109,7 +109,7 @@
   "livre_protection": {
     "type_carte": "EnchantedBook",
     "nom": "Livre Protection IV",
-    "description": "Une aura de rechange runique. Multiplie par 1.5 (x1.5) les PV d'un mob allié.",
+    "description": "Une aura de rechange runique. Multiplie par 1.5 (x1.5) les PV d'un mob allie.",
     "stat_modifiee": "vie",
     "multiplicateur": 1.5,
     "cible": "allie",
@@ -118,7 +118,7 @@
   "livre_faiblesse": {
     "type_carte": "EnchantedBook",
     "nom": "Livre Faiblesse",
-    "description": "Une malédiction vaporeuse. Divise par 2 (x0.5) la force d'attaque d'un mob adverse.",
+    "description": "Une maldiction vaporeuse. Divise par 2 (x0.5) la force d'attaque d'un mob adverse.",
     "stat_modifiee": "attaque",
     "multiplicateur": 0.5,
     "cible": "ennemi",
@@ -126,8 +126,8 @@
   },
   "livre_emousse": {
     "type_carte": "EnchantedBook",
-    "nom": "Livre Émousser",
-    "description": "Brise l'armure ennemie. Divise par 2 (x0.5) la vie actuelle du mob ciblé.",
+    "nom": "Livre Emousser",
+    "description": "Brise l'armure ennemie. Divise par 2 (x0.5) la vie actuelle du mob cible.",
     "stat_modifiee": "vie",
     "multiplicateur": 0.5,
     "cible": "ennemi",

@@ -83,6 +83,8 @@ if data:
                 player.deck.acheter_carte(carte)
                 if carte in shop.cartes:
                     shop.acheter(carte)
+                    
+player.set_argent(500)
 
 running = True
 text = ""
@@ -205,6 +207,7 @@ while running:
     elif etat == "DECK":
         screen.fill((40, 30, 40)) 
         etat = bouton_retour.verifier_clic(etat, son_clic)
+        bouton_retour.afficher(screen)
         
         if player:
             titre = font.render(f"DECK DE {player.name.upper()}", True, white)
@@ -220,8 +223,9 @@ while running:
 
 
     elif etat == "SHOP":
-        screen.fill((20, 40, 20))
+        screen.fill((20, 40, 20)) 
         etat = bouton_retour.verifier_clic(etat, son_clic)
+        bouton_retour.afficher(screen)
 
         txt_boutique = font.render("BOUTIQUE", True, white)
         screen.blit(txt_boutique, (540, 20))
@@ -230,26 +234,45 @@ while running:
             txt_argent = font.render(f"Emeraudes: {player.get_argent()}", True, (85, 255, 85))
             screen.blit(txt_argent, (850, 20))
 
+
         scroll_x += 1 
-        
         largeur_totale_shop = len(shop.cartes) * 220
         if largeur_totale_shop > 0 and scroll_x > largeur_totale_shop + 100:
-            scroll_x = -1280  
+            scroll_x = -1280 
+
 
         for index, carte in enumerate(shop.cartes):
-            x = 100 + (index * 220) - scroll_x  
+            x = 100 + (index * 220) - scroll_x 
             y = 200
-            
 
             if -180 < x < 1280:
                 pygame.draw.rect(screen, (40, 40, 40), (x, y, 180, 260))
                 pygame.draw.rect(screen, (85, 255, 85), (x, y, 180, 260), 3)
                 
                 txt_nom = font_small.render(carte.nom, True, white)
-                txt_desc = font_small.render(carte.description, True, white)  
-                screen.blit(txt_nom, (x + 15, y + 30))
-                screen.blit(txt_desc, (x + 15, y+ 50))
-                
+                screen.blit(txt_nom, (x + 15, y + 20))
+
+                mots = carte.description.split(' ')
+                lignes = []
+                ligne_actuelle = ""
+
+                for mot in mots:
+                    test_ligne = ligne_actuelle + mot + " "
+                    if font_small.size(test_ligne)[0] <= 150:
+                        ligne_actuelle = test_ligne
+                    else:
+                        lignes.append(ligne_actuelle)
+                        ligne_actuelle = mot + " "
+                lignes.append(ligne_actuelle)
+
+                y_desc = y + 55
+                for ligne in lignes:
+                    if ligne.strip():
+                        txt_desc = font_small.render(ligne.strip(), True, white)
+                        screen.blit(txt_desc, (x + 15, y_desc))
+                        y_desc += 22
+
+
                 txt_prix = font_small.render(f"Prix: {carte.prix} EM", True, (255, 215, 0))
                 screen.blit(txt_prix, (x + 15, y + 210))
 
