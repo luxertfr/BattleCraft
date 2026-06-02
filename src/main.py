@@ -45,6 +45,10 @@ play_fond = pygame.image.load("./assets/img/play-fond.jpg")
 play_fond = play_fond.convert()
 play_fond = pygame.transform.scale(play_fond, (1280, 720))
 
+shop_fond = pygame.image.load("./assets/img/shop-fond.png")
+shop_fond = shop_fond.convert()
+shop_fond = pygame.transform.scale(shop_fond, (1280, 720))
+
 welcome = pygame.image.load("./assets/img/name.png")
 welcome = pygame.transform.scale(welcome, (640, 170))
 
@@ -84,7 +88,7 @@ if data:
                 if carte in shop.cartes:
                     shop.acheter(carte)
                     
-player.set_argent(500)
+
 
 running = True
 text = ""
@@ -223,7 +227,7 @@ while running:
 
 
     elif etat == "SHOP":
-        screen.fill((20, 40, 20)) 
+        screen.blit(shop_fond, (0, 0))
         etat = bouton_retour.verifier_clic(etat, son_clic)
         bouton_retour.afficher(screen)
 
