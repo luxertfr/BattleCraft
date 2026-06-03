@@ -6,7 +6,7 @@ class Card:
     def __init__(self,nom, description, type, prix = None):
         self.nom = nom
         self.description = description
-        self.type = type
+        self.type_carte = type
         self.prix = prix
 
     

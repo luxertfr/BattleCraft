@@ -170,6 +170,22 @@ while running:
                         if carte in player.jeu:
                             player.deselect_jeu(carte)
                         else:
+                            nb_mobs = sum(1 for c in player.jeu if c.type_carte == "Mob")
+                            nb_autres = sum(1 for c in player.jeu if c.type_carte != "Mob")
+                            
+                            if carte.type_carte == "Mob":
+                                if nb_mobs < 3:
+                                    player.select_jeu(carte)
+                                else:
+                                    print("Limite atteinte : Maximum 3 Mobs autorisés")
+                                    break
+                            
+                            else:
+                                if nb_autres < 2:
+                                    player.select_jeu(carte)
+                                else:
+                                    print("Limite atteinte : Maximum 2 cartes de soutien (Soin/Livre/TNT)")
+                                    break
                             if len(player.jeu) < 5:
                                 player.select_jeu(carte)
                         if player:
@@ -219,6 +235,10 @@ while running:
     elif etat == "PLAY":
         screen.blit(play_fond, (0, 0))
         etat = bouton_retour.verifier_clic(etat, son_clic)
+        bouton_retour.afficher(screen)
+        
+        mobs_actifs = [c for c in player.jeu if c.type_carte == "Mob"]
+        soins_actifs = [c for c in player.jeu if c.type_carte != "Mob"]
         
         COULEUR_ALLIE = (0, 255, 0)      
         COULEUR_ENNEMI = (255, 0, 0)      
@@ -229,11 +249,20 @@ while running:
 
         ALLIE_X = 100
         for i in range(3):
-            y = 135 + (i * 150)  
-            rect_allie = pygame.Rect(ALLIE_X, y, LARGEUR_CARTE, HAUTEUR_CARTE)
-            pygame.draw.rect(screen, COULEUR_ALLIE, rect_allie, 2)
-            txt = font.render(f"M{i+1}", True, COULEUR_ALLIE)
-            screen.blit(txt, (ALLIE_X + 25, y + 45))
+            y = 100 + (i * 200)  
+
+            if i < len(mobs_actifs):
+                carte = mobs_actifs[i]
+                cle_carte = carte.nom.lower().replace(" ", "_")
+                
+                if cle_carte in IMG_DECK:
+                    screen.blit(IMG_DECK[cle_carte], (ALLIE_X, y))
+                else:
+                    pygame.draw.rect(screen, (0, 255, 0), (ALLIE_X, y, LARGEUR_CARTE, HAUTEUR_CARTE), 2)
+            else:
+                pygame.draw.rect(screen, (0, 100, 0), (ALLIE_X, y, LARGEUR_CARTE, HAUTEUR_CARTE), 1)
+                txt_vide = font_small.render(f"Mob {i+1}", True, (0, 100, 0))
+                screen.blit(txt_vide, (ALLIE_X + 30, y + 80))
         
         ENNEMI_X = 1090
         for i in range(3):
@@ -243,21 +272,24 @@ while running:
             txt = font.render(f"E{i+1}", True, COULEUR_ENNEMI)
             screen.blit(txt, (ENNEMI_X + 25, y + 45))
 
-        OBJET_Y = 580
-        LARGEUR_OBJET = 140   
-        HAUTEUR_OBJET = 110
+        OBJET_Y = 510
+        slots_x = [480, 640] 
 
-        slot_1_x = 480
-        rect_objet1 = pygame.Rect(slot_1_x, OBJET_Y, LARGEUR_OBJET, HAUTEUR_OBJET)
-        pygame.draw.rect(screen, COULEUR_OBJET, rect_objet1, 2)
-        txt_obj1 = font.render("OBJ 1", True, COULEUR_OBJET)
-        screen.blit(txt_obj1, (slot_1_x + 15, OBJET_Y + 35))
-
-        slot_2_x = 660
-        rect_objet2 = pygame.Rect(slot_2_x, OBJET_Y, LARGEUR_OBJET, HAUTEUR_OBJET)
-        pygame.draw.rect(screen, COULEUR_OBJET, rect_objet2, 2)
-        txt_obj2 = font.render("OBJ 2", True, COULEUR_OBJET)
-        screen.blit(txt_obj2, (slot_2_x + 15, OBJET_Y + 35))
+        for i in range(2):
+            x = slots_x[i]
+            
+            if i < len(soins_actifs):
+                carte = soins_actifs[i]
+                cle_carte = carte.nom.lower().replace(" ", "_")
+                
+                if cle_carte in IMG_DECK:
+                    screen.blit(IMG_DECK[cle_carte], (x, OBJET_Y))
+                else:
+                    pygame.draw.rect(screen, (255, 215, 0), (x, OBJET_Y, LARGEUR_CARTE, HAUTEUR_CARTE), 2)
+            else:
+                pygame.draw.rect(screen, (139, 117, 0), (x, OBJET_Y, LARGEUR_CARTE, HAUTEUR_CARTE), 1)
+                txt_vide = font_small.render("Vide", True, (139, 117, 0))
+                screen.blit(txt_vide, (x + 40, OBJET_Y + 80))
 
     elif etat == "DECK":
         screen.fill((40, 30, 40)) 

@@ -1,0 +1,74 @@
+{
+  "husk": {
+    "type_carte": "EnemyMob",
+    "nom": "Husk",
+    "description": "Un zombie des sables immunisé au soleil. Un peu plus coriace que le zombie de base.",
+    "vie": 60,
+    "attaque": 8,
+    "difficulte": "Facile",
+    "image": "husk.png"
+  },
+  "araignee": {
+    "type_carte": "EnemyMob",
+    "nom": "Araignée",
+    "description": "Très rapide mais fragile. Elle attaque souvent en premier.",
+    "vie": 25,
+    "attaque": 12,
+    "difficulte": "Facile",
+    "image": "araignee.png"
+  },
+  "piglin": {
+    "type_carte": "EnemyMob",
+    "nom": "Piglin",
+    "description": "Armé d'une épée en or. Il inflige de bons dégâts mais sa vie est moyenne.",
+    "vie": 40,
+    "attaque": 14,
+    "difficulte": "Moyen",
+    "image": "piglin.png"
+  },
+  "blaze": {
+    "type_carte": "EnemyMob",
+    "nom": "Blaze",
+    "description": "Flotte dans les airs et tire des boules de feu. Un attaquant redoutable.",
+    "vie": 50,
+    "attaque": 18,
+    "difficulte": "Moyen",
+    "image": "blaze.png"
+  },
+  "ghast": {
+    "type_carte": "EnemyMob",
+    "nom": "Ghast",
+    "description": "Une immense créature volante. Beaucoup de points de vie et des attaques dévastatrices.",
+    "vie": 90,
+    "attaque": 25,
+    "difficulte": "Difficile",
+    "image": "ghast.png"
+  },
+  "wither_skeleton": {
+    "type_carte": "EnemyMob",
+    "nom": "Wither skeleton",
+    "description": "Manie une épée en pierre qui inflige un effet de décomposition. Très dangereux.",
+    "vie": 75,
+    "attaque": 22,
+    "difficulte": "Difficile",
+    "image": "wither_skeleton.png"
+  },
+  "ender_dragon": {
+    "type_carte": "EnemyMob",
+    "nom": "Ender Dragon",
+    "description": "Le boss ultime de l'End. Une quantité de vie colossale, préparez vos meilleurs combos.",
+    "vie": 250,
+    "attaque": 35,
+    "difficulte": "Boss",
+    "image": "ender_dragon.png"
+  },
+  "wither": {
+    "type_carte": "EnemyMob",
+    "nom": "Wither",
+    "description": "Créature à trois têtes destructrice. Capable de détruire vos lignes de défense rapidement.",
+    "vie": 300,
+    "attaque": 30,
+    "difficulte": "Boss",
+    "image": "wither.png"
+  }
+}
