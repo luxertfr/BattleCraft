@@ -7,7 +7,9 @@ from Player import Player
 from Card import Card, MobCard, FoodCard, EnchantedBookCard, ArtifactCard
 from shop import Shop
 from deck import Deck
+from ennemy import Ennemy, ALL_ENNEMI, IMG_ENNEMI, ennemi_config
 from card_manager import ALL_CARDS
+from combat_manager import gerer_attaque_mob, appliquer_boost_attaque, appliquer_boost_def, appliquer_soin
 
 
 
@@ -44,19 +46,7 @@ for nom_carte, data_carte in cards_config.items():
         secours.fill((60, 60, 90))
         IMG_DECK[nom_carte] = secours
 
-with open("./src/ennemi.json", "r", encoding="utf-8") as f:
-    ennemi_config = json.load(f)
 
-IMG_ENNEMI = {}
-for id_ennemi, data_ennemi in ennemi_config.items():
-    chemin_img = f"./assets/img/ennemies/{data_ennemi['image']}"
-    try:
-        loaded_img = pygame.image.load(chemin_img)
-        IMG_ENNEMI[id_ennemi] = pygame.transform.scale(loaded_img,(120, 180))
-    except pygame.error:
-        secours = pygame.Surface((120, 180))
-        secours.fill((150, 50, 50))
-        IMG_ENNEMI[id_ennemi] = secours
 
 
 # --- Instanciation des classes ---
@@ -121,6 +111,9 @@ ennemi_defilement_actuel = None
 ennemi_choisi = None    
 temps_arret_loterie = 0
 
+message_victoire = ""
+temps_affichage_message = 0
+
 if data:
 
     player = Player(data[1])
@@ -147,7 +140,7 @@ if data:
     
                     
 
-
+carte_selectionnee_combat = None
 running = True
 text = ""
 active = False
@@ -155,9 +148,13 @@ etat = "MENU"
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
+            if player:
+                player.sauvegarder_jeu_db(cursor, conn)
             running = False
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
+                if player:
+                    player.sauvegarder_jeu_db(cursor, conn)
                 pygame.quit()
                 quit()
 
@@ -202,22 +199,21 @@ while running:
                             nb_autres = sum(1 for c in player.jeu if c.type_carte != "Mob")
                             
                             if carte.type_carte == "Mob":
-                                if nb_mobs < 3:
+                                if nb_mobs < 3 and len(player.jeu) < 5:
                                     player.select_jeu(carte)
                                 else:
                                     print("Limite atteinte : Maximum 3 Mobs autorisés")
                                     break
                             
                             else:
-                                if nb_autres < 2:
+                                if nb_autres < 2 and len(player.jeu) < 5:
                                     player.select_jeu(carte)
                                 else:
                                     print("Limite atteinte : Maximum 2 cartes de soutien (Soin/Livre/TNT)")
                                     break
-                            if len(player.jeu) < 5:
-                                player.select_jeu(carte)
+
                         if player:
-                            player.sauvegarder_jeu_db()
+                            player.sauvegarder_jeu_db(cursor, conn)
                         break
                                             
 
@@ -239,6 +235,64 @@ while running:
                             break 
                         else:
                             print("Pas assez d'argent !")
+        
+        elif etat == "PLAY":
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mobs_actifs = [c for c in player.jeu if c.type_carte == "Mob"]
+                soins_actifs = [c for c in player.jeu if c.type_carte != "Mob"]
+                
+                # --- CLIC MOBS ALLIÉS (À GAUCHE) ---
+                ALLIE_X = 100
+                for i in range(len(mobs_actifs)):
+                    y = 100 + (i * 200)
+                    rect_allie = pygame.Rect(ALLIE_X, y, 120, 180) 
+                    if rect_allie.collidepoint(event.pos):
+                        son_clic.play()
+                        if carte_selectionnee_combat and carte_selectionnee_combat.type_carte != "Mob":
+                            if carte_selectionnee_combat.type_carte == "Food":
+                                appliquer_soin(carte_selectionnee_combat, mobs_actifs[i])
+                            elif carte_selectionnee_combat.type_carte == "EnchantedBook":
+                                appliquer_boost_attaque(carte_selectionnee_combat, mobs_actifs[i])
+                            
+                            player.jeu.remove(carte_selectionnee_combat) 
+                            carte_selectionnee_combat = None 
+                        else:
+                            carte_selectionnee_combat = mobs_actifs[i]
+                        break
+
+                # --- CLIC SOINS (EN BAS) ---
+                OBJET_Y = 510
+                slots_x = [480, 640]
+                for i in range(len(soins_actifs)):
+                    rect_objet = pygame.Rect(slots_x[i], OBJET_Y, 120, 180)
+                    if rect_objet.collidepoint(event.pos):
+                        son_clic.play()
+                        carte_selectionnee_combat = soins_actifs[i] 
+                        break
+
+                # --- CLIC ENNEMI (AU MILIEU) ---
+                if loterie_terminee and ennemi_choisi:
+                    rect_ennemi = pygame.Rect(580, 200, 120, 180)
+                    
+                    if rect_ennemi.collidepoint(event.pos):
+                        ennemi_objet = ALL_ENNEMI[ennemi_choisi]
+
+                        if ennemi_objet.vie > 0:
+                            if carte_selectionnee_combat and carte_selectionnee_combat.type_carte == "Mob":
+                                son_clic.play()
+                                
+                                gerer_attaque_mob(carte_selectionnee_combat, ennemi_objet)
+                                print(f"L'ennemi n'a plus que {ennemi_objet.vie} PV !")
+                                carte_selectionnee_combat = None 
+
+                                if ennemi_objet.vie <= 0:
+                                    print("Ennemi vaincu !")
+                                    pieces_gagnes = random.randint(50, 200)
+                                    player.gagner_argent(pieces_gagnes)
+                                    message_victoire = f"Bravo ! Tu as gagne {pieces_gagnes} emeraudes"
+                                    temps_affichage_message = pygame.time.get_ticks()
+                            else:
+                                print("Sélectionne d'abord un de tes Mobs à gauche pour attaquer !")
 
     screen.fill((30, 30, 30))
 
@@ -262,6 +316,7 @@ while running:
                 loterie_terminee = False
                 temps_debut_loterie = pygame.time.get_ticks()
                 ennemi_choisi = None
+                carte_selectionnee_combat = None 
             etat = bouton_decks.verifier_clic(etat, son_clic)
             etat = bouton_boutique.verifier_clic(etat, son_clic)
             etat = bouton_quitter.verifier_clic(etat, son_clic)
@@ -283,6 +338,9 @@ while running:
                 loterie_en_cours = False
                 loterie_terminee = True
                 ennemi_choisi = ennemi_defilement_actuel
+                ennemi = ALL_ENNEMI[ennemi_defilement_actuel]
+                if not hasattr(ennemi, "vie_max"):
+                    ennemi.vie_max = ennemi.vie
                 temps_arret_loterie = temps_actuel 
                 
 
@@ -298,31 +356,46 @@ while running:
 
         elif loterie_terminee and ennemi_choisi:
             screen.blit(IMG_ENNEMI[ennemi_choisi], (MILIEU_X, MILIEU_Y))
-            
-            infos = ennemi_config[ennemi_choisi]
-            
-            if temps_actuel - temps_arret_loterie < 4000:
+            ennemi_objet = ALL_ENNEMI[ennemi_choisi]
+
+            if ennemi_objet.vie > 0:
                 
-                pygame.draw.rect(screen, (20, 20, 20), (340, MILIEU_Y + 200, 600, 100))
-                pygame.draw.rect(screen, (255, 0, 0), (340, MILIEU_Y + 200, 600, 100), 2)
+                # --- AFFICHAGE DE LA BARRE DE VIE DE L'ENNEMI ---
+                pourcentage_vie = max(0, ennemi_objet.vie) / ennemi_objet.vie_max
                 
+                BARRE_X = MILIEU_X
+                BARRE_Y = MILIEU_Y - 25
+                LARGEUR_BARRE_MAX = 120
+                HAUTEUR_BARRE = 12
                 
-                txt_nom = font.render(infos["nom"].upper(), True, (255, 85, 85))
-                screen.blit(txt_nom, (360, MILIEU_Y + 210))
+                pygame.draw.rect(screen, (200, 50, 50), (BARRE_X, BARRE_Y, LARGEUR_BARRE_MAX, HAUTEUR_BARRE))
+                largeur_verte = int(LARGEUR_BARRE_MAX * pourcentage_vie)
+                if largeur_verte > 0:
+                    pygame.draw.rect(screen, (50, 200, 50), (BARRE_X, BARRE_Y, largeur_verte, HAUTEUR_BARRE))
+                pygame.draw.rect(screen, (0, 0, 0), (BARRE_X, BARRE_Y, LARGEUR_BARRE_MAX, HAUTEUR_BARRE), 2)
                 
-                txt_desc = font_small.render(infos["description"], True, (255, 255, 255))
-                screen.blit(txt_desc, (360, MILIEU_Y + 260))
+                txt_pv = font_XXSMALL.render(f"{ennemi_objet.vie} / {ennemi_objet.vie_max} PV", True, white)
+                screen.blit(txt_pv, (BARRE_X + 25, BARRE_Y - 14))
+                
+                infos = ennemi_config[ennemi_choisi]
+                if temps_actuel - temps_arret_loterie < 4000:
+                    pygame.draw.rect(screen, (20, 20, 20), (340, MILIEU_Y + 200, 600, 100))
+                    pygame.draw.rect(screen, (255, 0, 0), (340, MILIEU_Y + 200, 600, 100), 2)
+                    
+                    txt_nom = font.render(infos["nom"].upper(), True, (255, 85, 85))
+                    screen.blit(txt_nom, (360, MILIEU_Y + 210))
+                    
+                    txt_desc = font_small.render(infos["description"], True, (255, 255, 255))
+                    screen.blit(txt_desc, (360, MILIEU_Y + 260))
 
         
         mobs_actifs = [c for c in player.jeu if c.type_carte == "Mob"]
         soins_actifs = [c for c in player.jeu if c.type_carte != "Mob"]
         
-        COULEUR_ALLIE = (0, 255, 0)      
-        COULEUR_OBJET = (255, 215, 0)     
-        
-        LARGEUR_CARTE = 90
-        HAUTEUR_CARTE = 130
+        LARGEUR_CARTE = 120
+        HAUTEUR_CARTE = 180
 
+        # --- DESSIN DES MOBS ALLIÉS (À GAUCHE) ---
         ALLIE_X = 100
         for i in range(3):
             y = 100 + (i * 200)  
@@ -335,11 +408,15 @@ while running:
                     screen.blit(IMG_DECK[cle_carte], (ALLIE_X, y))
                 else:
                     pygame.draw.rect(screen, (0, 255, 0), (ALLIE_X, y, LARGEUR_CARTE, HAUTEUR_CARTE), 2)
+                
+                if carte == carte_selectionnee_combat:
+                    pygame.draw.rect(screen, (255, 255, 255), (ALLIE_X, y, LARGEUR_CARTE, HAUTEUR_CARTE), 4)
             else:
                 pygame.draw.rect(screen, (0, 100, 0), (ALLIE_X, y, LARGEUR_CARTE, HAUTEUR_CARTE), 1)
                 txt_vide = font_small.render(f"Mob {i+1}", True, (0, 100, 0))
-                screen.blit(txt_vide, (ALLIE_X + 30, y + 80))
+                screen.blit(txt_vide, (ALLIE_X + 25, y + 80))
         
+        # --- DESSIN DES SOINS (EN BAS) ---
         OBJET_Y = 510
         slots_x = [480, 640] 
 
@@ -354,10 +431,23 @@ while running:
                     screen.blit(IMG_DECK[cle_carte], (x, OBJET_Y))
                 else:
                     pygame.draw.rect(screen, (255, 215, 0), (x, OBJET_Y, LARGEUR_CARTE, HAUTEUR_CARTE), 2)
+                
+                if carte == carte_selectionnee_combat:
+                    pygame.draw.rect(screen, (255, 255, 255), (x, OBJET_Y, LARGEUR_CARTE, HAUTEUR_CARTE), 4)
             else:
                 pygame.draw.rect(screen, (139, 117, 0), (x, OBJET_Y, LARGEUR_CARTE, HAUTEUR_CARTE), 1)
                 txt_vide = font_small.render("Vide", True, (139, 117, 0))
-                screen.blit(txt_vide, (x + 40, OBJET_Y + 80))
+                screen.blit(txt_vide, (x + 35, OBJET_Y + 80))
+                
+        if message_victoire != "":
+            if temps_actuel - temps_affichage_message < 4000: 
+                pygame.draw.rect(screen, (20, 20, 20), (340, 450, 600, 50))
+                pygame.draw.rect(screen, (85, 255, 85), (340, 450, 600, 50), 2)
+                
+                txt = font_small.render(message_victoire, True, (255, 215, 0))
+                screen.blit(txt, (360, 465))
+            else:
+                message_victoire = "" 
 
     elif etat == "DECK":
         screen.fill((40, 30, 40)) 
@@ -380,7 +470,6 @@ while running:
                 if cle_carte in IMG_DECK:
                     screen.blit(IMG_DECK[cle_carte], (x, y))
                 else:
-                    print(cle_carte)
                     pygame.draw.rect(screen, (60, 60, 90), (x, y, 120, 180))
                     pygame.draw.rect(screen, white, (x, y, 120, 180), 2)
                 if carte in player.jeu:
@@ -442,10 +531,14 @@ while running:
                 screen.blit(txt_prix, (x + 15, y + 210))
 
     elif etat == "QUIT":
+        if player:
+            player.sauvegarder_jeu_db(cursor, conn)
         pygame.quit()
         quit()
 
     pygame.display.flip()
     clock.tick(60)
 
+if player:
+    player.sauvegarder_jeu_db(cursor, conn)
 pygame.quit()

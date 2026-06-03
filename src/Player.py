@@ -49,12 +49,12 @@ class Player:
     
     def select_jeu(self, carte):
         self.jeu.append(carte)
-        self.sauvegarder_jeu_db()
+        self.sauvegarder_jeu_db(cursor, conn)
         
     def deselect_jeu(self, carte):
         self.jeu.remove(carte)
     
-    def sauvegarder_jeu_db(self):
+    def sauvegarder_jeu_db(self, cursor, conn):
         noms_cartes = [carte.nom for carte in self.jeu]
         jeu_texte = ",".join(noms_cartes)
         cursor.execute("UPDATE users SET jeu = ? WHERE name = ?", (jeu_texte, self.name))

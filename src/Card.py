@@ -8,6 +8,7 @@ class Card:
         self.description = description
         self.type_carte = type
         self.prix = prix
+        
 
     
     
@@ -15,7 +16,7 @@ class MobCard(Card):
     def __init__(self, nom, description, vie, attaque, prix=None):
         super().__init__(nom, description, type="Mob", prix = prix)
         self.vie = vie
-        self.attack = attaque
+        self.attaque = attaque
         
 class FoodCard(Card):
     def __init__(self, nom, description, soin, prix= None):
@@ -25,7 +26,7 @@ class FoodCard(Card):
 class EnchantedBookCard(Card):
     def __init__(self, nom, description, modif_stat, valeur, cible, prix = None):
         super().__init__(nom, description, type = "Outil",prix = prix)
-        self.modif_stat = modif_stat
+        self.boost = modif_stat
         self.valeur = valeur
         self.cible = cible
 
