@@ -242,17 +242,24 @@ while running:
                 soins_actifs = [c for c in player.jeu if c.type_carte != "Mob"]
                 
                 # --- CLIC MOBS ALLIÉS (À GAUCHE) ---
+# --- CLIC SUR UN MOB ALLIÉ (À GAUCHE) ---
                 ALLIE_X = 100
                 for i in range(len(mobs_actifs)):
                     y = 100 + (i * 200)
-                    rect_allie = pygame.Rect(ALLIE_X, y, 120, 180) 
+                    rect_allie = pygame.Rect(ALLIE_X, y, 90, 130)
+                    
                     if rect_allie.collidepoint(event.pos):
                         son_clic.play()
+                        
                         if carte_selectionnee_combat and carte_selectionnee_combat.type_carte != "Mob":
                             if carte_selectionnee_combat.type_carte == "Food":
                                 appliquer_soin(carte_selectionnee_combat, mobs_actifs[i])
-                            elif carte_selectionnee_combat.type_carte == "EnchantedBook":
-                                appliquer_boost_attaque(carte_selectionnee_combat, mobs_actifs[i])
+                                
+                                for carte_originale in player.jeu:
+                                    if carte_originale.nom == mobs_actifs[i].nom:
+                                        valeur_soin = getattr(carte_selectionnee_combat, "soin", 20)
+                                        carte_originale.vie += valeur_soin
+                                        print(f"Soin appliqué directement dans player.jeu ! Nouvelle vie : {carte_originale.vie}")
                             
                             player.jeu.remove(carte_selectionnee_combat) 
                             carte_selectionnee_combat = None 
@@ -276,19 +283,36 @@ while running:
                     
                     if rect_ennemi.collidepoint(event.pos):
                         ennemi_objet = ALL_ENNEMI[ennemi_choisi]
-
+                        
                         if ennemi_objet.vie > 0:
                             if carte_selectionnee_combat and carte_selectionnee_combat.type_carte == "Mob":
                                 son_clic.play()
                                 
                                 gerer_attaque_mob(carte_selectionnee_combat, ennemi_objet)
                                 print(f"L'ennemi n'a plus que {ennemi_objet.vie} PV !")
+                                
+                                if ennemi_objet.vie > 0:
+                                    mobs_en_vie = [m for m in mobs_actifs if getattr(m, "vie", 0) > 0]
+                                    
+                                    if mobs_en_vie:
+                                        cible_au_hasard = random.choice(mobs_en_vie)
+                                        
+                                        degats_ennemi = ennemi_config[ennemi_choisi].get("attaque", 5) 
+                                        
+                                        cible_au_hasard.vie -= degats_ennemi
+                                        print(f" Le {ennemi_config[ennemi_choisi]['nom']} attaque {cible_au_hasard.nom} et lui inflige {degats_ennemi} degats !")
+                                        
+                                        if cible_au_hasard.vie <= 0:
+                                            print(f"Ton {cible_au_hasard.nom} a succombe...")
+                                            player.jeu.remove(cible_au_hasard)
+                                
                                 carte_selectionnee_combat = None 
 
                                 if ennemi_objet.vie <= 0:
                                     print("Ennemi vaincu !")
                                     pieces_gagnes = random.randint(50, 200)
                                     player.gagner_argent(pieces_gagnes)
+                                    
                                     message_victoire = f"Bravo ! Tu as gagne {pieces_gagnes} emeraudes"
                                     temps_affichage_message = pygame.time.get_ticks()
                             else:
@@ -329,6 +353,8 @@ while running:
         temps_actuel = pygame.time.get_ticks()
         liste_cles_ennemis = list(ennemi_config.keys())
 
+        # GESTION ET CALCUL DE LA LOTERIE
+
         if loterie_en_cours:
             if temps_actuel - temps_debut_loterie < duree_loterie:
                 if temps_actuel - dernier_changement_img > vitesse_defilement:
@@ -342,27 +368,25 @@ while running:
                 if not hasattr(ennemi, "vie_max"):
                     ennemi.vie_max = ennemi.vie
                 temps_arret_loterie = temps_actuel 
-                
-
 
         MILIEU_X = 580  
         MILIEU_Y = 200  
 
+        # AFFICHAGE DE L'ENNEMI / LOTERIE
+
         if loterie_en_cours and ennemi_defilement_actuel:
             screen.blit(IMG_ENNEMI[ennemi_defilement_actuel], (MILIEU_X, MILIEU_Y))
-            
             txt_roulette = font_small.render("??? CHOIX DE L'ENNEMI ???", True, (255, 255, 255))
             screen.blit(txt_roulette, (500, MILIEU_Y - 40))
 
         elif loterie_terminee and ennemi_choisi:
-            screen.blit(IMG_ENNEMI[ennemi_choisi], (MILIEU_X, MILIEU_Y))
             ennemi_objet = ALL_ENNEMI[ennemi_choisi]
-
+            
             if ennemi_objet.vie > 0:
+                screen.blit(IMG_ENNEMI[ennemi_choisi], (MILIEU_X, MILIEU_Y))
                 
                 # --- AFFICHAGE DE LA BARRE DE VIE DE L'ENNEMI ---
                 pourcentage_vie = max(0, ennemi_objet.vie) / ennemi_objet.vie_max
-                
                 BARRE_X = MILIEU_X
                 BARRE_Y = MILIEU_Y - 25
                 LARGEUR_BARRE_MAX = 120
@@ -377,6 +401,7 @@ while running:
                 txt_pv = font_XXSMALL.render(f"{ennemi_objet.vie} / {ennemi_objet.vie_max} PV", True, white)
                 screen.blit(txt_pv, (BARRE_X + 25, BARRE_Y - 14))
                 
+                # Description temporaire
                 infos = ennemi_config[ennemi_choisi]
                 if temps_actuel - temps_arret_loterie < 4000:
                     pygame.draw.rect(screen, (20, 20, 20), (340, MILIEU_Y + 200, 600, 100))
@@ -388,6 +413,7 @@ while running:
                     txt_desc = font_small.render(infos["description"], True, (255, 255, 255))
                     screen.blit(txt_desc, (360, MILIEU_Y + 260))
 
+        # AFFICHAGE DE CARTES
         
         mobs_actifs = [c for c in player.jeu if c.type_carte == "Mob"]
         soins_actifs = [c for c in player.jeu if c.type_carte != "Mob"]
@@ -438,7 +464,42 @@ while running:
                 pygame.draw.rect(screen, (139, 117, 0), (x, OBJET_Y, LARGEUR_CARTE, HAUTEUR_CARTE), 1)
                 txt_vide = font_small.render("Vide", True, (139, 117, 0))
                 screen.blit(txt_vide, (x + 35, OBJET_Y + 80))
+
+
+        if carte_selectionnee_combat:
+            INSPECT_X = 980
+            INSPECT_Y = 180
+            
+            pygame.draw.rect(screen, (40, 40, 50), (INSPECT_X, INSPECT_Y, 240, 320))
+            pygame.draw.rect(screen, (255, 255, 255), (INSPECT_X, INSPECT_Y, 240, 320), 3)
+            
+            txt_nom_sel = font_small.render(carte_selectionnee_combat.nom.upper(), True, (255, 255, 85))
+            screen.blit(txt_nom_sel, (INSPECT_X + 15, INSPECT_Y + 20))
+            
+            txt_type_sel = font_XXSMALL.render(f"TYPE: {carte_selectionnee_combat.type_carte}", True, (200, 200, 200))
+            screen.blit(txt_type_sel, (INSPECT_X + 15, INSPECT_Y + 50))
+            
+            if carte_selectionnee_combat.type_carte == "Mob":
+                val_vie = getattr(carte_selectionnee_combat, "vie", 0)
+                val_atk = getattr(carte_selectionnee_combat, "attaque", 0)
                 
+                txt_vie_sel = font_small.render(f"VIE : {val_vie}", True, (255, 85, 85))
+                txt_atk_sel = font_small.render(f"ATK : {val_atk}", True, (255, 170, 0))
+                screen.blit(txt_vie_sel, (INSPECT_X + 15, INSPECT_Y + 110))
+                screen.blit(txt_atk_sel, (INSPECT_X + 15, INSPECT_Y + 150))
+            else:
+
+                val_effet = getattr(carte_selectionnee_combat, "soin", None) or getattr(carte_selectionnee_combat, "boost", 0)
+                
+                txt_eff_sel = font_small.render(f"EFFET : +{val_effet}", True, (85, 255, 85))
+                screen.blit(txt_eff_sel, (INSPECT_X + 15, INSPECT_Y + 130))
+                
+            txt_tuto = font_XXSMALL.render("Clique sur une cible pour agir", True, (150, 150, 150))
+            screen.blit(txt_tuto, (INSPECT_X + 15, INSPECT_Y + 280))
+
+        # ==========================================
+        # AFFICHAGE DU MESSAGE DE VICTOIRE
+        # ==========================================
         if message_victoire != "":
             if temps_actuel - temps_affichage_message < 4000: 
                 pygame.draw.rect(screen, (20, 20, 20), (340, 450, 600, 50))
@@ -447,7 +508,7 @@ while running:
                 txt = font_small.render(message_victoire, True, (255, 215, 0))
                 screen.blit(txt, (360, 465))
             else:
-                message_victoire = "" 
+                message_victoire = ""
 
     elif etat == "DECK":
         screen.fill((40, 30, 40)) 
