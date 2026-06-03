@@ -1,6 +1,7 @@
 import sqlite3
 import pygame
 import json
+import random
 from Button import Button
 from Player import Player
 from Card import Card, MobCard, FoodCard, EnchantedBookCard, ArtifactCard
@@ -42,6 +43,20 @@ for nom_carte, data_carte in cards_config.items():
         secours = pygame.Surface((120, 180))
         secours.fill((60, 60, 90))
         IMG_DECK[nom_carte] = secours
+
+with open("./src/ennemi.json", "r", encoding="utf-8") as f:
+    ennemi_config = json.load(f)
+
+IMG_ENNEMI = {}
+for id_ennemi, data_ennemi in ennemi_config.items():
+    chemin_img = f"./assets/img/ennemies/{data_ennemi['image']}"
+    try:
+        loaded_img = pygame.image.load(chemin_img)
+        IMG_ENNEMI[id_ennemi] = pygame.transform.scale(loaded_img,(120, 180))
+    except pygame.error:
+        secours = pygame.Surface((120, 180))
+        secours.fill((150, 50, 50))
+        IMG_ENNEMI[id_ennemi] = secours
 
 
 # --- Instanciation des classes ---
@@ -91,8 +106,21 @@ scroll_x = 0
 # --- Récupération du profil joueur ---
 cursor.execute("SELECT * FROM users")
 data = cursor.fetchone()
-
 player = None
+
+
+# --- VARIABLES POUR LA LOTERIE ---
+loterie_en_cours = False
+loterie_terminee = False
+temps_debut_loterie = 0
+dernier_changement_img = 0
+vitesse_defilement = 50  
+duree_loterie = 2000     
+
+ennemi_defilement_actuel = None  
+ennemi_choisi = None    
+temps_arret_loterie = 0
+
 if data:
 
     player = Player(data[1])
@@ -227,7 +255,13 @@ while running:
             bouton_boutique.afficher(screen)
             bouton_quitter.afficher(screen)
 
-            etat = bouton_jouer.verifier_clic(etat, son_clic)
+            prochain_etat = bouton_jouer.verifier_clic(etat, son_clic)
+            if prochain_etat == 'PLAY' and etat != "PLAY":
+                etat = "PLAY"
+                loterie_en_cours = True
+                loterie_terminee = False
+                temps_debut_loterie = pygame.time.get_ticks()
+                ennemi_choisi = None
             etat = bouton_decks.verifier_clic(etat, son_clic)
             etat = bouton_boutique.verifier_clic(etat, son_clic)
             etat = bouton_quitter.verifier_clic(etat, son_clic)
@@ -237,11 +271,53 @@ while running:
         etat = bouton_retour.verifier_clic(etat, son_clic)
         bouton_retour.afficher(screen)
         
+        temps_actuel = pygame.time.get_ticks()
+        liste_cles_ennemis = list(ennemi_config.keys())
+
+        if loterie_en_cours:
+            if temps_actuel - temps_debut_loterie < duree_loterie:
+                if temps_actuel - dernier_changement_img > vitesse_defilement:
+                    ennemi_defilement_actuel = random.choice(liste_cles_ennemis)
+                    dernier_changement_img = temps_actuel
+            else:
+                loterie_en_cours = False
+                loterie_terminee = True
+                ennemi_choisi = ennemi_defilement_actuel
+                temps_arret_loterie = temps_actuel 
+                
+
+
+        MILIEU_X = 580  
+        MILIEU_Y = 200  
+
+        if loterie_en_cours and ennemi_defilement_actuel:
+            screen.blit(IMG_ENNEMI[ennemi_defilement_actuel], (MILIEU_X, MILIEU_Y))
+            
+            txt_roulette = font_small.render("??? CHOIX DE L'ENNEMI ???", True, (255, 255, 255))
+            screen.blit(txt_roulette, (500, MILIEU_Y - 40))
+
+        elif loterie_terminee and ennemi_choisi:
+            screen.blit(IMG_ENNEMI[ennemi_choisi], (MILIEU_X, MILIEU_Y))
+            
+            infos = ennemi_config[ennemi_choisi]
+            
+            if temps_actuel - temps_arret_loterie < 4000:
+                
+                pygame.draw.rect(screen, (20, 20, 20), (340, MILIEU_Y + 200, 600, 100))
+                pygame.draw.rect(screen, (255, 0, 0), (340, MILIEU_Y + 200, 600, 100), 2)
+                
+                
+                txt_nom = font.render(infos["nom"].upper(), True, (255, 85, 85))
+                screen.blit(txt_nom, (360, MILIEU_Y + 210))
+                
+                txt_desc = font_small.render(infos["description"], True, (255, 255, 255))
+                screen.blit(txt_desc, (360, MILIEU_Y + 260))
+
+        
         mobs_actifs = [c for c in player.jeu if c.type_carte == "Mob"]
         soins_actifs = [c for c in player.jeu if c.type_carte != "Mob"]
         
         COULEUR_ALLIE = (0, 255, 0)      
-        COULEUR_ENNEMI = (255, 0, 0)      
         COULEUR_OBJET = (255, 215, 0)     
         
         LARGEUR_CARTE = 90
@@ -264,14 +340,6 @@ while running:
                 txt_vide = font_small.render(f"Mob {i+1}", True, (0, 100, 0))
                 screen.blit(txt_vide, (ALLIE_X + 30, y + 80))
         
-        ENNEMI_X = 1090
-        for i in range(3):
-            y = 135 + (i * 150)
-            rect_ennemi = pygame.Rect(ENNEMI_X, y, LARGEUR_CARTE, HAUTEUR_CARTE)
-            pygame.draw.rect(screen, COULEUR_ENNEMI, rect_ennemi, 2)
-            txt = font.render(f"E{i+1}", True, COULEUR_ENNEMI)
-            screen.blit(txt, (ENNEMI_X + 25, y + 45))
-
         OBJET_Y = 510
         slots_x = [480, 640] 
 

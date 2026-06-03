@@ -2,7 +2,7 @@
   "husk": {
     "type_carte": "EnemyMob",
     "nom": "Husk",
-    "description": "Un zombie des sables immunisé au soleil. Un peu plus coriace que le zombie de base.",
+    "description": "Un zombie des sables immunise au soleil. Un peu plus coriace que le zombie de base.",
     "vie": 60,
     "attaque": 8,
     "difficulte": "Facile",
@@ -10,8 +10,8 @@
   },
   "araignee": {
     "type_carte": "EnemyMob",
-    "nom": "Araignée",
-    "description": "Très rapide mais fragile. Elle attaque souvent en premier.",
+    "nom": "Araignee",
+    "description": "Tres rapide mais fragile. Elle attaque souvent en premier.",
     "vie": 25,
     "attaque": 12,
     "difficulte": "Facile",
@@ -20,7 +20,7 @@
   "piglin": {
     "type_carte": "EnemyMob",
     "nom": "Piglin",
-    "description": "Armé d'une épée en or. Il inflige de bons dégâts mais sa vie est moyenne.",
+    "description": "Arme d une epee en or. Il inflige de bons degats mais sa vie est moyenne.",
     "vie": 40,
     "attaque": 14,
     "difficulte": "Moyen",
@@ -38,7 +38,7 @@
   "ghast": {
     "type_carte": "EnemyMob",
     "nom": "Ghast",
-    "description": "Une immense créature volante. Beaucoup de points de vie et des attaques dévastatrices.",
+    "description": "Une immense creature volante. Beaucoup de points de vie et des attaques devastatrices.",
     "vie": 90,
     "attaque": 25,
     "difficulte": "Difficile",
@@ -47,7 +47,7 @@
   "wither_skeleton": {
     "type_carte": "EnemyMob",
     "nom": "Wither skeleton",
-    "description": "Manie une épée en pierre qui inflige un effet de décomposition. Très dangereux.",
+    "description": "Manie une epee en pierre qui inflige un effet de decomposition. Tres dangereux.",
     "vie": 75,
     "attaque": 22,
     "difficulte": "Difficile",
@@ -56,7 +56,7 @@
   "ender_dragon": {
     "type_carte": "EnemyMob",
     "nom": "Ender Dragon",
-    "description": "Le boss ultime de l'End. Une quantité de vie colossale, préparez vos meilleurs combos.",
+    "description": "Le boss ultime de l End. Une quantite de vie colossale, preparez vos meilleurs combos.",
     "vie": 250,
     "attaque": 35,
     "difficulte": "Boss",
@@ -65,7 +65,7 @@
   "wither": {
     "type_carte": "EnemyMob",
     "nom": "Wither",
-    "description": "Créature à trois têtes destructrice. Capable de détruire vos lignes de défense rapidement.",
+    "description": "Creature a trois tetes destructrice. Capable de detruire vos lignes de defense rapidement.",
     "vie": 300,
     "attaque": 30,
     "difficulte": "Boss",
