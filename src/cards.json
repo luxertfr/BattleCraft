@@ -5,7 +5,8 @@
     "description": "Lent mais tres resistant. Votre meilleur acolyte pour encaisser les coups.",
     "vie": 50,
     "attaque": 10,
-    "prix": null
+    "prix": null,
+    "image": "zombie.png"
   },
   "squelette": {
     "type_carte": "Mob",
@@ -13,7 +14,8 @@
     "description": "Attaque a distance avec son arc. Inflige de bons degats mais reste fragile.",
     "vie": 30,
     "attaque": 15,
-    "prix": null
+    "prix": null,
+    "image": "squelette.png"
   },
   "chien": {
     "type_carte": "Mob",
@@ -21,21 +23,24 @@
     "description": "Agressif et rapide. Moins de vie mais mords plus fort que le Zombie.",
     "vie": 20,
     "attaque": 15,
-    "prix": null
+    "prix": null,
+    "image": "chien.png"
   },
   "pain": {
     "type_carte": "Food",
     "nom": "Pain",
     "description": "Fabrique avec trois brins de ble. Redonne un tout petit peu d'energie.",
     "soin": 15,
-    "prix": null
+    "prix": null,
+    "image": "pain.png"
   },
   "steak": {
     "type_carte": "Food",
     "nom": "Steak",
     "description": "Un bon steak de vache cuit a point. Restaure une quantite correcte d'energie.",
     "soin": 30,
-    "prix": null
+    "prix": null,
+    "image": "steak.png"
   },
   "creeper": {
     "type_carte": "Mob",
@@ -43,15 +48,17 @@
     "description": "Explose a l'impact. Enormes degats de zone, mais meurt immediatement apres.",
     "vie": 10,
     "attaque": 50,
-    "prix": 18
+    "prix": 18,
+    "image": "creeper.png"
   },
-  "golem_fer": {
+  "golem_de_fer": {
     "type_carte": "Mob",
     "nom": "Golem de Fer",
     "description": "Le protecteur ultime. Possède une quantite colossale de points de vie.",
     "vie": 150,
     "attaque": 20,
-    "prix": 28
+    "prix": 28,
+    "image": "golem_de_fer.png"
   },
   "enderman": {
     "type_carte": "Mob",
@@ -59,7 +66,8 @@
     "description": "Se teleporte pour frapper fort. Un excellent attaquant de fin de partie.",
     "vie": 45,
     "attaque": 30,
-    "prix": 20
+    "prix": 20,
+    "image": "enderman.png"
   },
   "sorciere": {
     "type_carte": "Mob",
@@ -67,53 +75,60 @@
     "description": "Jette des potions de poison. Degats reguliers et profil equilibre.",
     "vie": 35,
     "attaque": 15,
-    "prix": 12
+    "prix": 12,
+    "image": "sorciere.png"
   },
-  "potion_soin": {
+  "potion_de_soin_ii": {
     "type_carte": "Food",
     "nom": "Potion de Soin II",
     "description": "Une fiole rouge brassee pour une guerison magique instantanee.",
     "soin": 45,
-    "prix": 22
+    "prix": 22,
+    "image": "potion_de_soin_ii.png"
   },
-  "pomme_or": {
+  "pomme_d'or": {
     "type_carte": "Food",
     "nom": "Pomme d'Or",
     "description": "Brille de mille feux et soigne grandement les blessures de vos troupes.",
     "soin": 60,
-    "prix": 30
+    "prix": 30,
+    "image": "pomme_d'or.png"
   },
-  "pomme_notch": {
+  "pomme_d'or_enchantee": {
     "type_carte": "Food",
     "nom": "Pomme d'Or Enchantee",
     "description": "La pomme des dieux. Permet de sauver une situation desesperee.",
     "soin": 90,
-    "prix": 40
+    "prix": 40,
+    "image": "pomme_d'or_enchantee.png"
   },
-  "totem": {
+  "totem_d'immortalite": {
     "type_carte": "Food",
     "nom": "Totem d'Immortalite",
     "description": "Brandissez-le pour echapper au Game Over. Restaure l'integralite des PV.",
     "soin": 100,
-    "prix": 45
+    "prix": 45,
+    "image": "totem_d'immortalite.png"
   },
-  "livre_tranchant": {
+  "livre_tranchant_v": {
     "type_carte": "EnchantedBook",
     "nom": "Livre Tranchant V",
     "description": "Insuffle la puissance du diamant. Multiplie par 2 (x2.0) l'attaque d'un mob allie.",
     "stat_modifiee": "attaque",
     "multiplicateur": 2.0,
     "cible": "allie",
-    "prix": 20
+    "prix": 20,
+    "image": "livre_tranchant_v.png"
   },
-  "livre_protection": {
+  "livre_protection_iv": {
     "type_carte": "EnchantedBook",
     "nom": "Livre Protection IV",
     "description": "Une aura de rechange runique. Multiplie par 1.5 (x1.5) les PV d'un mob allie.",
     "stat_modifiee": "vie",
     "multiplicateur": 1.5,
     "cible": "allie",
-    "prix": 16
+    "prix": 16,
+    "image": "livre_protection_iv.png"
   },
   "livre_faiblesse": {
     "type_carte": "EnchantedBook",
@@ -122,7 +137,8 @@
     "stat_modifiee": "attaque",
     "multiplicateur": 0.5,
     "cible": "ennemi",
-    "prix": 12
+    "prix": 12,
+    "image": "livre_faiblesse.png"
   },
   "livre_emousse": {
     "type_carte": "EnchantedBook",
@@ -131,13 +147,15 @@
     "stat_modifiee": "vie",
     "multiplicateur": 0.5,
     "cible": "ennemi",
-    "prix": 22
+    "prix": 22,
+    "image": "livre_emousse.png"
   },
   "tnt": {
     "type_carte": "Artifact",
     "nom": "Bloc de TNT",
     "description": "Posez, allumez... BOOM ! Inflige 40 points de dégâts directs sans invoquer de mob.",
     "degats": 40,
-    "prix": 20
+    "prix": 20,
+    "image": "tnt.png"
   }
 }

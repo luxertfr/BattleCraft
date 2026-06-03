@@ -1,11 +1,14 @@
 import sqlite3
 import pygame
+import json
 from Button import Button
 from Player import Player
 from Card import Card, MobCard, FoodCard, EnchantedBookCard, ArtifactCard
 from shop import Shop
 from deck import Deck
 from card_manager import ALL_CARDS
+
+
 
 pygame.init()
 
@@ -22,6 +25,23 @@ cursor.execute("""
     )
 """)
 conn.commit()
+
+# --- JSON ---
+with open("./src/cards.json", "r", encoding="utf-8") as f:
+    cards_config = json.load(f)
+
+IMG_DECK = {}
+for nom_carte, data_carte in cards_config.items():
+    chemin_img = f"./assets/img/deck/{data_carte['image']}"
+    try:
+        loaded_img = pygame.image.load(chemin_img)
+        IMG_DECK[nom_carte] = pygame.transform.scale(loaded_img, (120, 180))
+    except pygame.error:
+        print(f"Attention: impossible de charger l'image de {nom_carte} à {chemin_img}")
+        secours = pygame.Surface((120, 180))
+        secours.fill((60, 60, 90))
+        IMG_DECK[nom_carte] = secours
+
 
 # --- Instanciation des classes ---
 shop = Shop()
@@ -82,11 +102,11 @@ if data:
         player.deck.cartes = [] 
         noms_sauvegardes = data[3].split(",")
         for nom in noms_sauvegardes:
-            if nom in ALL_CARDS:
-                carte = ALL_CARDS[nom]
-                player.deck.acheter_carte(carte)
-                if carte in shop.cartes:
-                    shop.acheter(carte)
+            carte_trouvee = next((c for c in ALL_CARDS.values() if c.nom == nom), None)
+            if carte_trouvee:
+                player.deck.acheter_carte(carte_trouvee)
+                if carte_trouvee in shop.cartes:
+                    shop.acheter(carte_trouvee)
                     
 
 
@@ -131,7 +151,7 @@ while running:
                 
                 for index, carte in enumerate(shop.cartes):
                    
-                    x = 100 + (index * 220)
+                    x = 100 + (index * 220) - scroll_x
                     y = 200
                     rect_carte = pygame.Rect(x, y, 180, 260)
                     
@@ -216,15 +236,23 @@ while running:
         if player:
             titre = font.render(f"DECK DE {player.name.upper()}", True, white)
             screen.blit(titre, (450, 30))
+            cartes_par_ligne = 7
             
             for index, carte in enumerate(player.deck.cartes):
-                x = 80 + (index * 150)
-                y = 200
-                pygame.draw.rect(screen, (60, 60, 90), (x, y, 120, 180))
-                pygame.draw.rect(screen, white, (x, y, 120, 180), 2)
-                txt_nom = font_small.render(carte.nom, True, white)
-                screen.blit(txt_nom, (x + 10, y + 20))
-
+                colonne = index % cartes_par_ligne
+                ligne = index // cartes_par_ligne
+                x = 80 + (colonne * 165)
+                y = 150 + (ligne * 230)
+                
+                cle_carte = carte.nom.lower().replace(" ", "_")
+                
+                if cle_carte in IMG_DECK:
+                    screen.blit(IMG_DECK[cle_carte], (x, y))
+                else:
+                    print(cle_carte)
+                    pygame.draw.rect(screen, (60, 60, 90), (x, y, 120, 180))
+                    pygame.draw.rect(screen, white, (x, y, 120, 180), 2)
+                    
 
     elif etat == "SHOP":
         screen.blit(shop_fond, (0, 0))
