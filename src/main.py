@@ -21,7 +21,8 @@ cursor.execute("""
         id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
         name TEXT,
         argent INTEGER,
-        deck TEXT
+        deck TEXT,
+        jeu TEXT
     )
 """)
 conn.commit()
@@ -87,7 +88,7 @@ bouton_retour   = Button(None, (20, 20), "./assets/img/quit.png", (150, 50), "ME
 
 scroll_x = 0
 
-# --- Récupération et reconstruction du profil joueur ---
+# --- Récupération du profil joueur ---
 cursor.execute("SELECT * FROM users")
 data = cursor.fetchone()
 
@@ -98,15 +99,24 @@ if data:
     player.argent = data[2]
     
 
-    if len(data) > 3 and data[3]:
-        player.deck.cartes = [] 
-        noms_sauvegardes = data[3].split(",")
-        for nom in noms_sauvegardes:
-            carte_trouvee = next((c for c in ALL_CARDS.values() if c.nom == nom), None)
-            if carte_trouvee:
-                player.deck.acheter_carte(carte_trouvee)
-                if carte_trouvee in shop.cartes:
-                    shop.acheter(carte_trouvee)
+    if len(data) > 3 :
+        if data[3]:
+            player.deck.cartes = [] 
+            noms_sauvegardes = data[3].split(",")
+            for nom in noms_sauvegardes:
+                carte_trouvee = next((c for c in ALL_CARDS.values() if c.nom == nom), None)
+                if carte_trouvee:
+                    player.deck.acheter_carte(carte_trouvee)
+                    if carte_trouvee in shop.cartes:
+                        shop.acheter(carte_trouvee)
+        if data[4]:
+            player.jeu = []
+            noms_sauvegardes = data[4].split(",")
+            for nom in noms_sauvegardes:
+                carte_trouvee = next((c for c in ALL_CARDS.values() if c.nom == nom), None)
+                if carte_trouvee:
+                    player.select_jeu(carte_trouvee)
+    
                     
 
 
@@ -114,7 +124,6 @@ running = True
 text = ""
 active = False
 etat = "MENU"
-
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -134,7 +143,7 @@ while running:
                 elif event.key == pygame.K_RETURN:
                     pseudo = text.strip()
                     if pseudo:
-                        cursor.execute("INSERT INTO users (name, argent, deck) VALUES (?, ?, ?)", (pseudo, 150, ""))
+                        cursor.execute("INSERT INTO users (name, argent, deck, jeu) VALUES (?, ?, ?, ?)", (pseudo, 150, "", ""))
                         conn.commit()
                         text = ""
                         cursor.execute("SELECT * FROM users WHERE name = ?", (pseudo,))
@@ -144,8 +153,30 @@ while running:
                             player.argent = data[2]
                 else:
                     text += event.unicode
+        elif etat == "DECK":
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                cartes_par_ligne = 7
+                for index, carte in enumerate(player.deck.cartes):
+                    colonne = index % cartes_par_ligne
+                    ligne = index // cartes_par_ligne
+                    x = 80 + (colonne * 165)
+                    y = 150 + (ligne * 230)
+                    
+                    rect_carte = pygame.Rect(x, y, 120, 180)
+                    
+                    if rect_carte.collidepoint(event.pos):
+                        
+                        son_clic.play()
+                        if carte in player.jeu:
+                            player.deselect_jeu(carte)
+                        else:
+                            if len(player.jeu) < 5:
+                                player.select_jeu(carte)
+                        if player:
+                            player.sauvegarder_jeu_db()
+                        break
+                                            
 
-        # --- Détection des clics dans la Boutique ---
         elif etat == "SHOP":
             if event.type == pygame.MOUSEBUTTONDOWN:
                 
@@ -252,6 +283,8 @@ while running:
                     print(cle_carte)
                     pygame.draw.rect(screen, (60, 60, 90), (x, y, 120, 180))
                     pygame.draw.rect(screen, white, (x, y, 120, 180), 2)
+                if carte in player.jeu:
+                    pygame.draw.rect(screen, (255, 255, 255), (x, y, 120, 180), 4)
                     
 
     elif etat == "SHOP":

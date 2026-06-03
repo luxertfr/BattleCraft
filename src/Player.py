@@ -10,6 +10,7 @@ class Player:
         self.name = name
         self.argent = 0
         self.deck = Deck()
+        self.jeu = []
         
     def get_deck(self):
         return self.deck
@@ -44,4 +45,17 @@ class Player:
     def perdre_argent(self, montant):
         self.argent -= montant
         cursor.execute("UPDATE users SET argent = ? WHERE name = ?", (self.argent, self.name))
+        conn.commit()
+    
+    def select_jeu(self, carte):
+        self.jeu.append(carte)
+        self.sauvegarder_jeu_db()
+        
+    def deselect_jeu(self, carte):
+        self.jeu.remove(carte)
+    
+    def sauvegarder_jeu_db(self):
+        noms_cartes = [carte.nom for carte in self.jeu]
+        jeu_texte = ",".join(noms_cartes)
+        cursor.execute("UPDATE users SET jeu = ? WHERE name = ?", (jeu_texte, self.name))
         conn.commit()
